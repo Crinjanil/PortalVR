@@ -1,0 +1,65 @@
+{% extends 'main/base.html' %}
+{% load static %}
+
+{% block content %}
+<section class="page-header">
+    <div class="container">
+        <h1 class="page-title">Где нас <span class="accent">найти?</span></h1>
+        <p class="page-subtitle">Приходите к нам — мы всегда рады гостям!</p>
+    </div>
+</section>
+
+<section class="section">
+    <div class="container">
+        <div class="contact-grid">
+            <div class="contact-info">
+                <div class="contact-card">
+                    <div class="contact-card-icon">
+                        <i class="fas fa-map-marker-alt"></i>
+                    </div>
+                    <div class="contact-card-content">
+                        <h3>Адрес</h3>
+                        <p>{{ site_address }}</p>
+                        <p class="contact-detail">Метро «Виртуальная», выход 3</p>
+                    </div>
+                </div>
+
+                <div class="contact-card">
+                    <div class="contact-card-icon">
+                        <i class="fas fa-phone"></i>
+                    </div>
+                    <div class="contact-card-content">
+                        <h3>Телефон</h3>
+                        <p><a href="tel:+79991234567">{{ site_phone }}</a></p>
+                        <p class="contact-detail">Звоните с 10:00 до 23:00</p>
+                    </div>
+                </div>
+
+                <div class="contact-card">
+                    <div class="contact-card-icon">
+                        <i class="fas fa-envelope"></i>
+                    </div>
+                    <div class="contact-card-content">
+                        <h3>Email</h3>
+                        <p><a href="mailto:{{ site_email }}">{{ site_email }}</a></p>
+                        <p class="contact-detail">Ответим в течение 24 часов</p>
+                    </div>
+                </div>
+
+                <div class="contact-card">
+                    <div class="contact-card-icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="contact-card-content">
+                        <h3>Режим работы</h3>
+                        <p>Ежедневно: 10:00 — 23:00</p>
+                        <p class="contact-detail">Без выходных и праздников</p>
+                    </div>
+                </div>
+            </div>
+
+            <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d9308.991040252888!2d48.39920862579733!3d54.31725116452528!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x415d376ea5a3c759%3A0xdabe39191b3642a6!2z0YPQuy4g0JTQstC-0YDRhtC-0LLQsNGPLCA00LAvMSwg0KPQu9GM0Y_QvdC-0LLRgdC6LCDQo9C70YzRj9C90L7QstGB0LrQsNGPINC-0LHQuy4sIDQzMjAwMA!5e0!3m2!1sru!2sru!4v1778218505432!5m2!1sru!2sru" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+        </div>
+    </div>
+</section>
+{% endblock %}

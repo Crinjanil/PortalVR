@@ -1,0 +1,181 @@
+{% extends 'main/base.html' %}
+{% load static %}
+{% load custom_filters %}
+
+{% block content %}
+<section class="page-header">
+    <div class="container">
+        <h1 class="page-title">
+            {% if profile_user == user %}
+                Мой <span class="accent">профиль</span>
+            {% else %}
+                Профиль: <span class="accent">{{ profile_user.name }}</span>
+            {% endif %}
+        </h1>
+    </div>
+</section>
+
+<section class="section">
+    <div class="container">
+        <div class="profile-grid">
+            <!-- Profile Card -->
+            <div class="profile-card">
+                <div class="profile-avatar">
+                    <i class="fas fa-user-astronaut"></i>
+                </div>
+                <h2 class="profile-name">{{ profile_user.name }}</h2>
+                {% if user.is_staff %}
+                    <p class="profile-phone">{{ profile_user.phone }}</p>
+                {% endif %}
+                <p class="profile-joined">
+                    <i class="fas fa-calendar"></i> С нами с {{ profile_user.date_joined|date:"d.m.Y" }}
+                </p>
+
+                <!-- Loyalty -->
+                <div class="profile-loyalty">
+                    <div class="loyalty-level-display {{ profile_user.loyalty_level|lower }}">
+                        {% if profile_user.loyalty_level == 'Platinum' %}
+                            <i class="fas fa-gem"></i>
+                        {% else %}
+                            <i class="fas fa-medal"></i>
+                        {% endif %}
+                        <span>{{ profile_user.loyalty_level }}</span>
+                    </div>
+                    <div class="loyalty-points-display">
+                        <span class="points-number">{{ profile_user.loyalty_points }}</span>
+                        <span class="points-label">баллов</span>
+                    </div>
+                    {% if profile_user.discount_percent > 0 %}
+                    <div class="loyalty-discount-display">
+                        <i class="fas fa-percent"></i>
+                        Скидка {{ profile_user.discount_percent }}%
+                    </div>
+                    {% endif %}
+                    <div class="loyalty-progress">
+                        {% if profile_user.loyalty_level == 'Bronze' %}
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: {% widthratio profile_user.loyalty_points 200 100 %}%"></div>
+                            </div>
+                            <span class="progress-text">{{ profile_user.loyalty_points }}/200 до Silver</span>
+                        {% elif profile_user.loyalty_level == 'Silver' %}
+                            <div class="progress-bar">
+                                <div class="progress-fill silver" style="width: {% widthratio profile_user.loyalty_points 500 100 %}%"></div>
+                            </div>
+                            <span class="progress-text">{{ profile_user.loyalty_points }}/500 до Gold</span>
+                        {% elif profile_user.loyalty_level == 'Gold' %}
+                            <div class="progress-bar">
+                                <div class="progress-fill gold" style="width: {% widthratio profile_user.loyalty_points 1000 100 %}%"></div>
+                            </div>
+                            <span class="progress-text">{{ profile_user.loyalty_points }}/1000 до Platinum</span>
+                        {% else %}
+                            <div class="progress-bar">
+                                <div class="progress-fill platinum" style="width: 100%"></div>
+                            </div>
+                            <span class="progress-text">Максимальный уровень!</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                {% if client %}
+                <div class="profile-stats">
+                    <div class="stat">
+                        <span class="stat-val">{{ client.total_visits }}</span>
+                        <span class="stat-lbl">Визитов</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-val">{{ bookings|length }}</span>
+                        <span class="stat-lbl">Броней</span>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Bookings History -->
+            <div class="profile-content">
+                <h3 class="content-title"><i class="fas fa-history"></i> История игр</h3>
+
+                {% if bookings %}
+                <div class="bookings-list">
+                    {% for booking in bookings %}
+                    <div class="booking-history-card status-{{ booking.status }}">
+                        <div class="bhc-header">
+                            <span class="bhc-zone zone-{{ booking.zone }}">
+                                {% if booking.zone == 'arena' %}
+                                    <i class="fas fa-vr-cardboard"></i>
+                                {% elif booking.zone == 'redroom' %}
+                                    <i class="fas fa-door-closed"></i>
+                                {% else %}
+                                    <i class="fas fa-box"></i>
+                                {% endif %}
+                                {{ booking.get_zone_display }}
+                            </span>
+                            <span class="bhc-status">{{ booking.get_status_display }}</span>
+                        </div>
+                        <div class="bhc-body">
+                            <div class="bhc-info">
+                                <span><i class="fas fa-calendar"></i> {{ booking.time_slot.date|date:"d.m.Y" }}</span>
+                                <span><i class="fas fa-clock"></i> {{ booking.time_slot.start_time|time:"H:i" }}—{{ booking.time_slot.end_time|time:"H:i" }}</span>
+                                <span><i class="fas fa-users"></i> {{ booking.num_players }} чел.</span>
+                            </div>
+                            {% if booking.game %}
+                                <span class="bhc-game"><i class="fas fa-gamepad"></i> {{ booking.game.title }}</span>
+                            {% endif %}
+                            {% if booking.package %}
+                                <span class="bhc-package"><i class="fas fa-box"></i> {{ booking.package }}</span>
+                            {% endif %}
+                            {% if booking.loyalty_points_earned > 0 %}
+                                <span class="bhc-points">+{{ booking.loyalty_points_earned }} ⭐</span>
+                            {% endif %}
+                        </div>
+                        {% if booking.status == 'active' and profile_user == user %}
+                        <div class="bhc-actions">
+                            <a href="{% url 'main:booking_cancel' booking.pk %}" class="btn btn-sm btn-outline-red"
+                               onclick="return confirm('Отменить бронирование?')">
+                                <i class="fas fa-times"></i> Отменить
+                            </a>
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="no-results">
+                    <i class="fas fa-calendar-times"></i>
+                    <h4>Пока нет бронирований</h4>
+                    <p>Забронируйте первый сеанс!</p>
+                    <a href="{% url 'main:booking_create' %}" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Создать бронь
+                    </a>
+                </div>
+                {% endif %}
+
+                {% if transactions %}
+                <h3 class="content-title mt-40"><i class="fas fa-star"></i> Транзакции баллов</h3>
+                <div class="transactions-list">
+                    {% for tx in transactions %}
+                    <div class="transaction-item type-{{ tx.transaction_type }}">
+                        <div class="tx-icon">
+                            {% if tx.transaction_type == 'earn' %}
+                                <i class="fas fa-plus-circle"></i>
+                            {% elif tx.transaction_type == 'spend' %}
+                                <i class="fas fa-minus-circle"></i>
+                            {% else %}
+                                <i class="fas fa-gift"></i>
+                            {% endif %}
+                        </div>
+                        <div class="tx-info">
+                            <span class="tx-desc">{{ tx.description }}</span>
+                            <span class="tx-date">{{ tx.created_at|date:"d.m.Y H:i" }}</span>
+                        </div>
+                        <div class="tx-points {% if tx.points > 0 %}positive{% else %}negative{% endif %}">
+                            {% if tx.points > 0 %}+{% endif %}{{ tx.points }}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

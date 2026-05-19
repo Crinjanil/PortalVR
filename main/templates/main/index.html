@@ -1,0 +1,186 @@
+{% extends 'main/base.html' %}
+{% load static %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero">
+    <div class="hero-overlay"></div>
+    <div class="hero-particles" id="particles"></div>
+    <div class="hero-content">
+        <h1 class="hero-title">
+            <span class="hero-title-line">Добро пожаловать в</span>
+            <span class="hero-title-main">PORTAL<span class="accent">VR</span></span>
+        </h1>
+        <p class="hero-subtitle">Погрузитесь в мир виртуальной реальности нового поколения</p>
+        <div class="hero-buttons">
+            <a href="{% url 'main:booking_list' %}" class="btn btn-primary btn-lg">
+                <i class="fas fa-calendar-check"></i> Забронировать
+            </a>
+            <a href="{% url 'main:services' %}" class="btn btn-outline btn-lg">
+                <i class="fas fa-gamepad"></i> Наши услуги
+            </a>
+        </div>
+        <div class="hero-stats">
+            <div class="stat-item">
+                <span class="stat-number" data-count="200">0</span>
+                <span class="stat-label">м² арена</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-number" data-count="15">0</span>
+                <span class="stat-label">VR игр</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-number" data-count="10">0</span>
+                <span class="stat-label">игроков</span>
+            </div>
+        </div>
+    </div>
+    <div class="hero-scroll">
+        <i class="fas fa-chevron-down"></i>
+    </div>
+</section>
+
+<!-- About Section -->
+<section class="section section-about">
+    <div class="container">
+        <h2 class="section-title">
+            <span class="title-decoration"></span>
+            О нашем клубе
+            <span class="title-decoration"></span>
+        </h2>
+        <div class="about-grid">
+            <div class="about-card">
+                <div class="about-card-icon">
+                    <i class="fas fa-vr-cardboard"></i>
+                </div>
+                <h3>VR Арена</h3>
+                <p>Оборудованное пространство площадью <strong>200 м²</strong> со свободным перемещением. До <strong>10 игроков</strong> одновременно. Командные сражения, кооперативные миссии и соревнования.</p>
+            </div>
+            <div class="about-card">
+                <div class="about-card-icon red">
+                    <i class="fas fa-door-closed"></i>
+                </div>
+                <h3>RED Room</h3>
+                <p>Камерная комната для одиночных VR-приключений. До <strong>3 игроков</strong> (каждый в своём мире). Идеально для хорроров, головоломок и сюжетных игр.</p>
+            </div>
+            <div class="about-card">
+                <div class="about-card-icon gold">
+                    <i class="fas fa-crown"></i>
+                </div>
+                <h3>Пакеты</h3>
+                <p>Полная аренда VR Арены + обеденная зона. Пакеты от 2 до 4 часов. Идеально для дней рождений, корпоративов и тимбилдинга.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Popular Games Slider -->
+{% if popular_games %}
+<section class="section section-slider">
+    <div class="container">
+        <h2 class="section-title">
+            <span class="title-decoration"></span>
+            Топ-5 популярных игр
+            <span class="title-decoration"></span>
+        </h2>
+        <div class="slider-wrapper">
+            <button class="slider-btn slider-prev" id="sliderPrev">
+                <i class="fas fa-chevron-left"></i>
+            </button>
+            <div class="slider" id="gameSlider">
+                <div class="slider-track" id="sliderTrack">
+                    {% for game in popular_games %}
+                    <div class="slider-slide">
+                        <div class="game-slide-card">
+                            <div class="game-slide-image">
+                                {% if game.image %}
+                                    <img src="{{ game.image.url }}" alt="{{ game.title }}">
+                                {% else %}
+                                    <div class="game-slide-placeholder">
+                                        <i class="fas fa-vr-cardboard"></i>
+                                    </div>
+                                {% endif %}
+                                <div class="game-slide-overlay">
+                                    <span class="game-zone-badge zone-{{ game.zone }}">
+                                        {{ game.get_zone_display }}
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="game-slide-info">
+                                <h3>{{ game.title }}</h3>
+                                <p>{{ game.short_description }}</p>
+                                <div class="game-slide-genres">
+                                    {% for genre in game.genres.all %}
+                                        <span class="genre-tag">{{ genre.name }}</span>
+                                    {% endfor %}
+                                </div>
+                                <div class="game-slide-players">
+                                    <i class="fas fa-users"></i>
+                                    {{ game.min_players }}—{{ game.max_players }} игроков
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            <button class="slider-btn slider-next" id="sliderNext">
+                <i class="fas fa-chevron-right"></i>
+            </button>
+        </div>
+        <div class="slider-dots" id="sliderDots"></div>
+    </div>
+</section>
+{% endif %}
+
+<!-- Loyalty Section -->
+<section class="section section-loyalty">
+    <div class="container">
+        <h2 class="section-title">
+            <span class="title-decoration"></span>
+            Программа лояльности
+            <span class="title-decoration"></span>
+        </h2>
+        <p class="section-subtitle">Играйте больше — получайте больше бонусов!</p>
+        <div class="loyalty-grid">
+            <div class="loyalty-card bronze">
+                <div class="loyalty-icon"><i class="fas fa-medal"></i></div>
+                <h3>Bronze</h3>
+                <p class="loyalty-points">0 — 199 баллов</p>
+                <p class="loyalty-discount">Базовый уровень</p>
+            </div>
+            <div class="loyalty-card silver">
+                <div class="loyalty-icon"><i class="fas fa-medal"></i></div>
+                <h3>Silver</h3>
+                <p class="loyalty-points">200 — 499 баллов</p>
+                <p class="loyalty-discount">Скидка 5%</p>
+            </div>
+            <div class="loyalty-card gold">
+                <div class="loyalty-icon"><i class="fas fa-medal"></i></div>
+                <h3>Gold</h3>
+                <p class="loyalty-points">500 — 999 баллов</p>
+                <p class="loyalty-discount">Скидка 10%</p>
+            </div>
+            <div class="loyalty-card platinum">
+                <div class="loyalty-icon"><i class="fas fa-gem"></i></div>
+                <h3>Platinum</h3>
+                <p class="loyalty-points">1000+ баллов</p>
+                <p class="loyalty-discount">Скидка 15%</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="section section-cta">
+    <div class="container">
+        <div class="cta-content">
+            <h2>Готовы к погружению?</h2>
+            <p>Забронируйте сеанс прямо сейчас и получите незабываемые впечатления</p>
+            <a href="{% url 'main:booking_list' %}" class="btn btn-primary btn-lg">
+                <i class="fas fa-rocket"></i> Забронировать сейчас
+            </a>
+        </div>
+    </div>
+</section>
+{% endblock %}

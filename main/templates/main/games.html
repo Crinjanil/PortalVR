@@ -1,0 +1,89 @@
+{% extends 'main/base.html' %}
+{% load static %}
+
+{% block content %}
+<section class="page-header">
+    <div class="container">
+        <h1 class="page-title">Библиотека <span class="accent">игр</span></h1>
+        <p class="page-subtitle">Выберите свое приключение в виртуальной реальности</p>
+    </div>
+</section>
+
+<section class="section">
+    <div class="container">
+        <!-- Filters -->
+        <div class="games-filters">
+            <form method="get" class="search-form" id="gamesSearchForm">
+                <div class="search-input-wrapper">
+                    <i class="fas fa-search"></i>
+                    <input type="text" name="search" value="{{ search_query }}"
+                           placeholder="Поиск по названию..." class="search-input"
+                           id="gameSearchInput">
+                    {% if search_query %}
+                        <a href="{% url 'main:games' %}" class="search-clear">
+                            <i class="fas fa-times"></i>
+                        </a>
+                    {% endif %}
+                </div>
+                {% if current_genre %}
+                    <input type="hidden" name="genre" value="{{ current_genre }}">
+                {% endif %}
+            </form>
+
+            <div class="genre-filters">
+                <a href="{% url 'main:games' %}{% if search_query %}?search={{ search_query }}{% endif %}"
+                   class="genre-btn {% if not current_genre %}active{% endif %}">
+                    Все
+                </a>
+                {% for genre in genres %}
+                    <a href="{% url 'main:games' %}?genre={{ genre.slug }}{% if search_query %}&search={{ search_query }}{% endif %}"
+                       class="genre-btn {% if current_genre == genre.slug %}active{% endif %}">
+                        {{ genre.name }}
+                    </a>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Games Grid -->
+        <div class="games-grid" id="gamesGrid">
+            {% for game in games %}
+            <div class="game-card" data-title="{{ game.title|lower }}">
+                <div class="game-card-image">
+                    {% if game.image %}
+                        <img src="{{ game.image.url }}" alt="{{ game.title }}" loading="lazy">
+                    {% else %}
+                        <div class="game-card-placeholder">
+                            <i class="fas fa-vr-cardboard"></i>
+                        </div>
+                    {% endif %}
+                    <div class="game-card-overlay">
+                        <span class="game-zone-badge zone-{{ game.zone }}">
+                            {{ game.get_zone_display }}
+                        </span>
+                        <div class="game-players-badge">
+                            <i class="fas fa-users"></i>
+                            {{ game.min_players }}—{{ game.max_players }}
+                        </div>
+                    </div>
+                </div>
+                <div class="game-card-content">
+                    <h3 class="game-card-title">{{ game.title }}</h3>
+                    <p class="game-card-desc">{{ game.short_description }}</p>
+                    <div class="game-card-genres">
+                        {% for genre in game.genres.all %}
+                            <span class="genre-tag-sm">{{ genre.name }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="no-results">
+                <i class="fas fa-search"></i>
+                <h3>Игры не найдены</h3>
+                <p>Попробуйте изменить параметры поиска</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,205 @@
+{% extends 'main/base.html' %}
+{% load static %}
+{% load custom_filters %}
+
+{% block content %}
+<section class="page-header">
+    <div class="container">
+        <h1 class="page-title">Бронирование <span class="accent">сеансов</span></h1>
+        <p class="page-subtitle">Выберите дату и посмотрите доступные слоты</p>
+    </div>
+</section>
+
+<section class="section">
+    <div class="container">
+        <!-- Date Navigation -->
+        <div class="date-nav">
+            <div class="date-nav-scroll">
+                {% for d in dates %}
+                <a href="?date={{ d|date:'Y-m-d' }}"
+                   class="date-nav-item {% if d == selected_date %}active{% endif %} {% if d == today %}today{% endif %}">
+                    <span class="date-day">{{ d|date:"D" }}</span>
+                    <span class="date-num">{{ d|date:"d" }}</span>
+                    <span class="date-month">{{ d|date:"M" }}</span>
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="booking-date-display">
+            <i class="fas fa-calendar"></i>
+            <span>{{ selected_date|date:"d E Y" }}</span>
+        </div>
+
+        {% if user.is_authenticated %}
+        <div class="booking-actions">
+            <a href="{% url 'main:booking_create' %}?date={{ selected_date|date:'Y-m-d' }}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Создать бронь
+            </a>
+        </div>
+        {% else %}
+        <div class="booking-notice">
+            <i class="fas fa-info-circle"></i>
+            <span>Для бронирования необходимо <a href="{% url 'main:login' %}">войти</a> или <a href="{% url 'main:register' %}">зарегистрироваться</a></span>
+        </div>
+        {% endif %}
+
+        <!-- Schedule Tables -->
+        <div class="schedule-grid">
+            <!-- VR Arena Schedule -->
+            <div class="schedule-block">
+                <h3 class="schedule-title">
+                    <i class="fas fa-vr-cardboard"></i> VR Арена
+                    <span class="schedule-capacity">10 мест</span>
+                </h3>
+                <div class="schedule-table-wrapper">
+                    <table class="schedule-table">
+                        <thead>
+                            <tr>
+                                <th>Время</th>
+                                <th>Статус</th>
+                                <th>Брони</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for time_label, data in schedule_arena.items %}
+                            <tr class="{% if data.is_package %}slot-package{% elif data.free == 0 %}slot-full{% elif data.taken > 0 %}slot-partial{% else %}slot-free{% endif %}">
+                                <td class="slot-time">{{ time_label }}</td>
+                                <td class="slot-status">
+                                    {% if data.is_package %}
+                                        <span class="status-badge status-package">
+                                            <i class="fas fa-lock"></i> Пакет
+                                        </span>
+                                    {% elif data.free == 0 %}
+                                        <span class="status-badge status-full">
+                                            <i class="fas fa-times-circle"></i> Занято
+                                        </span>
+                                    {% elif data.taken > 0 %}
+                                        <span class="status-badge status-partial">
+                                            <i class="fas fa-user-friends"></i> {{ data.free }} из 10
+                                        </span>
+                                    {% else %}
+                                        <span class="status-badge status-free">
+                                            <i class="fas fa-check-circle"></i> Свободно
+                                        </span>
+                                    {% endif %}
+                                </td>
+                                <td class="slot-bookings">
+                                    {% for booking in data.bookings %}
+                                    <div class="booking-chip">
+                                        <span class="booking-chip-name">{{ booking.client.name }}</span>
+                                        {% if user.is_staff %}
+                                            <span class="booking-chip-phone">{{ booking.client.phone }}</span>
+                                        {% endif %}
+                                        <span class="booking-chip-players">
+                                            <i class="fas fa-user"></i>{{ booking.num_players }}
+                                        </span>
+                                        {% if booking.game %}
+                                            <span class="booking-chip-game">{{ booking.game.title }}</span>
+                                        {% endif %}
+                                        {% if user.is_authenticated %}
+                                            {% if user.is_staff %}
+                                                <div class="booking-chip-actions">
+                                                    <a href="{% url 'main:booking_edit' booking.pk %}" class="chip-action edit" title="Редактировать">
+                                                        <i class="fas fa-edit"></i>
+                                                    </a>
+                                                    <a href="{% url 'main:booking_cancel' booking.pk %}" class="chip-action cancel" title="Отменить"
+                                                       onclick="return confirm('Отменить бронирование?')">
+                                                        <i class="fas fa-ban"></i>
+                                                    </a>
+                                                </div>
+                                            {% elif user.client_profile and booking.client == user.client_profile %}
+                                                <a href="{% url 'main:booking_cancel' booking.pk %}" class="chip-action cancel" title="Отменить"
+                                                   onclick="return confirm('Отменить бронирование?')">
+                                                    <i class="fas fa-times"></i>
+                                                </a>
+                                            {% endif %}
+                                        {% endif %}
+                                    </div>
+                                    {% endfor %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- RED Room Schedule -->
+            <div class="schedule-block">
+                <h3 class="schedule-title red">
+                    <i class="fas fa-door-closed"></i> RED Room
+                    <span class="schedule-capacity">3 места</span>
+                </h3>
+                <div class="schedule-table-wrapper">
+                    <table class="schedule-table">
+                        <thead>
+                            <tr>
+                                <th>Время</th>
+                                <th>Статус</th>
+                                <th>Брони</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for time_label, data in schedule_redroom.items %}
+                            <tr class="{% if data.free == 0 %}slot-full{% elif data.taken > 0 %}slot-partial{% else %}slot-free{% endif %}">
+                                <td class="slot-time">{{ time_label }}</td>
+                                <td class="slot-status">
+                                    {% if data.free == 0 %}
+                                        <span class="status-badge status-full">
+                                            <i class="fas fa-times-circle"></i> Занято
+                                        </span>
+                                    {% elif data.taken > 0 %}
+                                        <span class="status-badge status-partial">
+                                            <i class="fas fa-user-friends"></i> {{ data.free }} из 3
+                                        </span>
+                                    {% else %}
+                                        <span class="status-badge status-free">
+                                            <i class="fas fa-check-circle"></i> Свободно
+                                        </span>
+                                    {% endif %}
+                                </td>
+                                <td class="slot-bookings">
+                                    {% for booking in data.bookings %}
+                                    <div class="booking-chip">
+                                        <span class="booking-chip-name">{{ booking.client.name }}</span>
+                                        {% if user.is_staff %}
+                                            <span class="booking-chip-phone">{{ booking.client.phone }}</span>
+                                        {% endif %}
+                                        <span class="booking-chip-players">
+                                            <i class="fas fa-user"></i>{{ booking.num_players }}
+                                        </span>
+                                        {% if booking.game %}
+                                            <span class="booking-chip-game">{{ booking.game.title }}</span>
+                                        {% endif %}
+                                        {% if user.is_authenticated %}
+                                            {% if user.is_staff %}
+                                                <div class="booking-chip-actions">
+                                                    <a href="{% url 'main:booking_edit' booking.pk %}" class="chip-action edit"><i class="fas fa-edit"></i></a>
+                                                    <a href="{% url 'main:booking_cancel' booking.pk %}" class="chip-action cancel" onclick="return confirm('Отменить?')"><i class="fas fa-ban"></i></a>
+                                                </div>
+                                            {% elif user.client_profile and booking.client == user.client_profile %}
+                                                <a href="{% url 'main:booking_cancel' booking.pk %}" class="chip-action cancel" onclick="return confirm('Отменить?')"><i class="fas fa-times"></i></a>
+                                            {% endif %}
+                                        {% endif %}
+                                    </div>
+                                    {% endfor %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Legend -->
+        <div class="schedule-legend">
+            <div class="legend-item"><span class="legend-color free"></span> Свободно</div>
+            <div class="legend-item"><span class="legend-color partial"></span> Частично занято</div>
+            <div class="legend-item"><span class="legend-color full"></span> Занято</div>
+            <div class="legend-item"><span class="legend-color package"></span> Пакет (полная аренда)</div>
+        </div>
+    </div>
+</section>
+{% endblock %}

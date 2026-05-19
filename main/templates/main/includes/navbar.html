@@ -1,0 +1,58 @@
+{% load static %}
+<nav class="navbar" id="navbar">
+    <div class="nav-container">
+        <a href="{% url 'main:index' %}" class="nav-logo">
+            <span class="logo-icon"><i class="fas fa-vr-cardboard"></i></span>
+            <span class="logo-text">PORTAL<span class="logo-accent">VR</span></span>
+        </a>
+
+        <button class="nav-toggle" id="navToggle" aria-label="Меню">
+            <span></span><span></span><span></span>
+        </button>
+
+        <ul class="nav-menu" id="navMenu">
+            <li><a href="{% url 'main:index' %}" class="nav-link {% if request.resolver_match.url_name == 'index' %}active{% endif %}">
+                <i class="fas fa-home"></i> О нас
+            </a></li>
+            <li><a href="{% url 'main:services' %}" class="nav-link {% if request.resolver_match.url_name == 'services' %}active{% endif %}">
+                <i class="fas fa-gamepad"></i> Услуги
+            </a></li>
+            <li><a href="{% url 'main:games' %}" class="nav-link {% if request.resolver_match.url_name == 'games' %}active{% endif %}">
+                <i class="fas fa-dice-d20"></i> Игры
+            </a></li>
+            <li><a href="{% url 'main:contact' %}" class="nav-link {% if request.resolver_match.url_name == 'contact' %}active{% endif %}">
+                <i class="fas fa-map-marker-alt"></i> Где нас найти?
+            </a></li>
+            <li>
+                <a href="{% url 'main:booking_list' %}" class="nav-link nav-btn-booking {% if 'booking' in request.resolver_match.url_name %}active{% endif %}">
+                    <i class="fas fa-calendar-check"></i> Бронирование
+                </a>
+            </li>
+        </ul>
+
+        <div class="nav-auth">
+            <button class="theme-toggle" id="themeToggle" title="Переключить тему">
+                <i class="fas fa-sun"></i>
+            </button>
+            {% if user.is_authenticated %}
+                <a href="{% url 'main:profile' %}" class="nav-user" title="Профиль">
+                    <i class="fas fa-user-circle"></i>
+                    <span>{{ user.name }}</span>
+                    {% if user.loyalty_points > 0 %}
+                        <span class="loyalty-badge">{{ user.loyalty_points }} ⭐</span>
+                    {% endif %}
+                </a>
+                <a href="{% url 'main:logout' %}" class="nav-btn nav-btn-logout" title="Выход">
+                    <i class="fas fa-sign-out-alt"></i>
+                </a>
+            {% else %}
+                <a href="{% url 'main:login' %}" class="nav-btn nav-btn-login">
+                    <i class="fas fa-sign-in-alt"></i> Вход
+                </a>
+                <a href="{% url 'main:register' %}" class="nav-btn nav-btn-register">
+                    <i class="fas fa-user-plus"></i> Регистрация
+                </a>
+            {% endif %}
+        </div>
+    </div>
+</nav>

@@ -1,0 +1,173 @@
+{% extends 'main/base.html' %}
+{% load widget_tweaks %}
+
+{% block content %}
+<section class="page-header">
+    <div class="container">
+        <h1 class="page-title">
+            {% if editing %}
+                Редактировать <span class="accent">бронь</span>
+            {% else %}
+                Создать <span class="accent">бронь</span>
+            {% endif %}
+        </h1>
+    </div>
+</section>
+
+<section class="section">
+    <div class="container">
+        <div class="form-container">
+            <form method="post" class="booking-form" id="bookingForm">
+                {% csrf_token %}
+
+                {% if is_admin %}
+                <div class="form-section">
+                    <h3 class="form-section-title"><i class="fas fa-user"></i> Данные клиента</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="id_client_name">{{ form.client_name.label }}</label>
+                            {{ form.client_name }}
+                            <div class="form-error" id="error_client_name"></div>
+                        </div>
+                        <div class="form-group">
+                            <label for="id_client_phone">{{ form.client_phone.label }}</label>
+                            {{ form.client_phone }}
+                            <div class="form-error" id="error_client_phone"></div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <div class="form-section">
+                    <h3 class="form-section-title"><i class="fas fa-map-marker-alt"></i> Зона и время</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="id_zone">{{ form.zone.label }}</label>
+                            {{ form.zone }}
+                        </div>
+                        <div class="form-group">
+                            <label for="id_date">{{ form.date.label }}</label>
+                            {{ form.date }}
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="id_time_slot">{{ form.time_slot.label }}</label>
+                            {{ form.time_slot }}
+                        </div>
+                        <div class="form-group">
+                            <label for="id_num_players">{{ form.num_players.label }}</label>
+                            {{ form.num_players }}
+                            <div class="form-hint" id="playersHint">Макс: 10 (арена) / 3 (RED Room)</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section" id="packageSection" style="display:none;">
+                    <h3 class="form-section-title"><i class="fas fa-box"></i> Пакет</h3>
+                    <div class="form-group">
+                        <label for="id_package">{{ form.package.label }}</label>
+                        {{ form.package }}
+                    </div>
+                </div>
+
+                <!-- Availability indicator -->
+                <div class="availability-indicator" id="availabilityIndicator" style="display:none;">
+                    <div class="availability-loading" id="availLoading">
+                        <i class="fas fa-spinner fa-spin"></i> Проверка доступности...
+                    </div>
+                    <div class="availability-result" id="availResult" style="display:none;"></div>
+                </div>
+
+                <div class="form-actions">
+                    <a href="{% url 'main:booking_list' %}" class="btn btn-outline">
+                        <i class="fas fa-arrow-left"></i> Назад
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-check"></i>
+                        {% if editing %}Сохранить{% else %}Забронировать{% endif %}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const zoneSelect = document.getElementById('id_zone');
+    const packageSection = document.getElementById('packageSection');
+    const numPlayersInput = document.getElementById('id_num_players');
+    const playersHint = document.getElementById('playersHint');
+
+    function togglePackage() {
+        if (zoneSelect.value === 'package') {
+            packageSection.style.display = 'block';
+            numPlayersInput.max = 10;
+            playersHint.textContent = 'До 10 игроков (полная аренда арены)';
+        } else if (zoneSelect.value === 'redroom') {
+            packageSection.style.display = 'none';
+            numPlayersInput.max = 3;
+            if (parseInt(numPlayersInput.value) > 3) numPlayersInput.value = 3;
+            playersHint.textContent = 'Максимум 3 игрока';
+        } else {
+            packageSection.style.display = 'none';
+            numPlayersInput.max = 10;
+            playersHint.textContent = 'Максимум 10 игроков';
+        }
+        checkAvailability();
+    }
+
+    zoneSelect.addEventListener('change', togglePackage);
+    togglePackage();
+
+    // Check availability via API
+    const dateInput = document.querySelector('[name="date"]');
+    const timeSelect = document.getElementById('id_time_slot');
+    const indicator = document.getElementById('availabilityIndicator');
+    const loading = document.getElementById('availLoading');
+    const result = document.getElementById('availResult');
+
+    function checkAvailability() {
+        const date = dateInput.value;
+        const zone = zoneSelect.value === 'package' ? 'arena' : zoneSelect.value;
+        const time = timeSelect.value;
+
+        if (!date || !time) {
+            indicator.style.display = 'none';
+            return;
+        }
+
+        indicator.style.display = 'block';
+        loading.style.display = 'flex';
+        result.style.display = 'none';
+
+        fetch(`/api/availability/?date=${date}&zone=${zone}`)
+            .then(r => r.json())
+            .then(data => {
+                loading.style.display = 'none';
+                result.style.display = 'block';
+                const slotData = data[time];
+                if (slotData) {
+                    if (slotData.blocked) {
+                        result.innerHTML = '<span class="avail-blocked"><i class="fas fa-lock"></i> Время заблокировано пакетом</span>';
+                    } else if (slotData.free > 0) {
+                        result.innerHTML = `<span class="avail-ok"><i class="fas fa-check-circle"></i> Свободно мест: ${slotData.free}</span>`;
+                    } else {
+                        result.innerHTML = '<span class="avail-full"><i class="fas fa-times-circle"></i> Все места заняты</span>';
+                    }
+                }
+            })
+            .catch(() => {
+                loading.style.display = 'none';
+                result.style.display = 'none';
+            });
+    }
+
+    dateInput.addEventListener('change', checkAvailability);
+    timeSelect.addEventListener('change', checkAvailability);
+});
+</script>
+{% endblock %}

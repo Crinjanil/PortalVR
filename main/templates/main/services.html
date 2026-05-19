@@ -1,0 +1,165 @@
+{% extends 'main/base.html' %}
+{% load static %}
+
+{% block content %}
+<section class="page-header">
+    <div class="container">
+        <h1 class="page-title">Наши <span class="accent">услуги</span></h1>
+        <p class="page-subtitle">Выберите формат погружения в виртуальную реальность</p>
+    </div>
+</section>
+
+<!-- Zones -->
+<section class="section">
+    <div class="container">
+        <div class="services-zones">
+            <!-- VR Arena -->
+            <div class="zone-card zone-arena">
+                <div class="zone-card-header">
+                    <div class="zone-icon">
+                        <i class="fas fa-vr-cardboard"></i>
+                    </div>
+                    <h2>VR Арена</h2>
+                    <span class="zone-badge">200 м²</span>
+                </div>
+                <div class="zone-card-body">
+                    <div class="zone-features">
+                        <div class="zone-feature">
+                            <i class="fas fa-users"></i>
+                            <span>от 2 до 10 игроков</span>
+                        </div>
+                        <div class="zone-feature">
+                            <i class="fas fa-walking"></i>
+                            <span>Свободное перемещение</span>
+                        </div>
+                        <div class="zone-feature">
+                            <i class="fas fa-clock"></i>
+                            <span>Сеанс — 1 час</span>
+                        </div>
+                        <div class="zone-feature">
+                            <i class="fas fa-gamepad"></i>
+                            <span>Командные и кооперативные игры</span>
+                        </div>
+                    </div>
+                    <p class="zone-description">
+                        Огромное пространство для полного погружения. Свободно перемещайтесь по арене,
+                        сражайтесь в командных баталиях или проходите кооперативные миссии вместе с друзьями.
+                        Современное оборудование обеспечивает точное отслеживание движений каждого игрока.
+                    </p>
+                    <div class="zone-price">
+                        <span class="price-value">от 800 ₽</span>
+                        <span class="price-per">/ чел. за час</span>
+                    </div>
+                </div>
+                <div class="zone-card-footer">
+                    <a href="{% url 'main:booking_list' %}" class="btn btn-primary">
+                        <i class="fas fa-calendar-check"></i> Забронировать
+                    </a>
+                </div>
+            </div>
+
+            <!-- RED Room -->
+            <div class="zone-card zone-redroom">
+                <div class="zone-card-header">
+                    <div class="zone-icon red">
+                        <i class="fas fa-door-closed"></i>
+                    </div>
+                    <h2>RED Room</h2>
+                    <span class="zone-badge red">Одиночные игры</span>
+                </div>
+                <div class="zone-card-body">
+                    <div class="zone-features">
+                        <div class="zone-feature">
+                            <i class="fas fa-user"></i>
+                            <span>до 3 игроков</span>
+                        </div>
+                        <div class="zone-feature">
+                            <i class="fas fa-headset"></i>
+                            <span>Индивидуальные VR-станции</span>
+                        </div>
+                        <div class="zone-feature">
+                            <i class="fas fa-clock"></i>
+                            <span>Сеанс — 1 час</span>
+                        </div>
+                        <div class="zone-feature">
+                            <i class="fas fa-ghost"></i>
+                            <span>Хорроры, головоломки, сюжетные игры</span>
+                        </div>
+                    </div>
+                    <p class="zone-description">
+                        Камерная комната для одиночных VR-приключений. Каждый игрок погружается
+                        в свой собственный мир. Идеально подходит для хорроров, сюжетных игр
+                        и головоломок, требующих полной концентрации.
+                    </p>
+                    <div class="zone-price">
+                        <span class="price-value">от 600 ₽</span>
+                        <span class="price-per">/ чел. за час</span>
+                    </div>
+                </div>
+                <div class="zone-card-footer">
+                    <a href="{% url 'main:booking_list' %}" class="btn btn-red">
+                        <i class="fas fa-calendar-check"></i> Забронировать
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Packages -->
+<section class="section section-packages">
+    <div class="container">
+        <h2 class="section-title">
+            <span class="title-decoration"></span>
+            Пакеты
+            <span class="title-decoration"></span>
+        </h2>
+        <p class="section-subtitle">Полная аренда VR Арены + обеденная зона</p>
+
+        <div class="packages-grid">
+            {% for package in packages %}
+            <div class="package-card {% if package.name == 'standard' %}featured{% endif %}">
+                {% if package.name == 'standard' %}
+                    <div class="package-badge">Популярный</div>
+                {% endif %}
+                <div class="package-header">
+                    <h3 class="package-name">
+                        {% if package.name == 'light' %}
+                            <i class="fas fa-feather"></i> Light
+                        {% elif package.name == 'standard' %}
+                            <i class="fas fa-star"></i> Standard
+                        {% else %}
+                            <i class="fas fa-crown"></i> Premium
+                        {% endif %}
+                    </h3>
+                    <div class="package-duration">
+                        <span class="duration-number">{{ package.duration_hours }}</span>
+                        <span class="duration-label">часа</span>
+                    </div>
+                </div>
+                <div class="package-price">
+                    <span class="price-amount">{{ package.price|floatformat:0 }} ₽</span>
+                </div>
+                <ul class="package-features">
+                    <li><i class="fas fa-check"></i> Полная аренда VR Арены (200 м²)</li>
+                    <li><i class="fas fa-check"></i> До 10 игроков</li>
+                    <li><i class="fas fa-check"></i> {{ package.duration_hours }} часа игрового времени</li>
+                    <li><i class="fas fa-check"></i> Обеденная зона</li>
+                    <li><i class="fas fa-check"></i> Все игры из библиотеки</li>
+                    {% if package.name == 'premium' %}
+                        <li><i class="fas fa-check"></i> Персональный инструктор</li>
+                        <li><i class="fas fa-check"></i> Фотозона</li>
+                    {% endif %}
+                    {% if package.name == 'standard' %}
+                        <li><i class="fas fa-check"></i> Фотозона</li>
+                    {% endif %}
+                </ul>
+                <a href="{% url 'main:booking_list' %}" class="btn {% if package.name == 'standard' %}btn-primary{% else %}btn-outline{% endif %} btn-block">
+                    Забронировать
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endblock %}
