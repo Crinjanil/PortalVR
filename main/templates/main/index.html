@@ -171,6 +171,84 @@
     </div>
 </section>
 
+<!-- Reviews Section -->
+<section class="section section-reviews">
+    <div class="container">
+        <h2 class="section-title">
+            <span class="title-decoration"></span>
+            Отзывы наших гостей
+            <span class="title-decoration"></span>
+        </h2>
+
+        <!-- Review Form (for authenticated users) -->
+        {% if user.is_authenticated %}
+        <div class="review-form-container">
+            <form method="post" action="{% url 'main:review_add' %}" class="review-form">
+                {% csrf_token %}
+                <h3>Оставьте свой отзыв</h3>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="rating">Оценка</label>
+                        <select name="rating" id="rating" class="form-select">
+                            <option value="5">5 ★</option>
+                            <option value="4">4 ★</option>
+                            <option value="3">3 ★</option>
+                            <option value="2">2 ★</option>
+                            <option value="1">1 ★</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="text">Ваш отзыв</label>
+                    <textarea name="text" id="text" class="form-input" rows="3" placeholder="Поделитесь своими впечатлениями..." required minlength="10"></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-paper-plane"></i> Отправить отзыв
+                </button>
+            </form>
+        </div>
+        {% else %}
+        <div class="review-login-prompt">
+            <p><a href="{% url 'main:login' %}">Войдите</a> или <a href="{% url 'main:register' %}">зарегистрируйтесь</a>, чтобы оставить отзыв</p>
+        </div>
+        {% endif %}
+
+        <!-- Reviews List -->
+        {% if reviews %}
+        <div class="reviews-grid">
+            {% for review in reviews %}
+            <div class="review-card">
+                <div class="review-header">
+                    <div class="review-author">
+                        <i class="fas fa-user-circle"></i>
+                        <span>{{ review.name }}</span>
+                    </div>
+                    <div class="review-rating">
+                        {% for i in "12345"|make_list %}
+                        <i class="fas fa-star{% if forloop.counter <= review.rating %} active{% endif %}"></i>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="review-body">
+                    <p>{{ review.text }}</p>
+                </div>
+                <div class="review-footer">
+                    <span class="review-date">{{ review.created_at|date:"d.m.Y" }}</span>
+                    {% if user.is_staff %}
+                    <a href="{% url 'main:review_delete' review.pk %}?next={{ request.path }}" class="review-delete" onclick="return confirm('Удалить отзыв?');">
+                        <i class="fas fa-trash"></i>
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p class="no-reviews">Пока нет отзывов. Будьте первым!</p>
+        {% endif %}
+    </div>
+</section>
+
 <!-- CTA Section -->
 <section class="section section-cta">
     <div class="container">

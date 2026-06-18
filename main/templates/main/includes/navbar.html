@@ -23,6 +23,9 @@
             <li><a href="{% url 'main:contact' %}" class="nav-link {% if request.resolver_match.url_name == 'contact' %}active{% endif %}">
                 <i class="fas fa-map-marker-alt"></i> Где нас найти?
             </a></li>
+            <li><a href="{% url 'main:reviews' %}" class="nav-link {% if request.resolver_match.url_name == 'reviews' %}active{% endif %}">
+                <i class="fas fa-comments"></i> Отзывы
+            </a></li>
             <li>
                 <a href="{% url 'main:booking_list' %}" class="nav-link nav-btn-booking {% if 'booking' in request.resolver_match.url_name %}active{% endif %}">
                     <i class="fas fa-calendar-check"></i> Бронирование

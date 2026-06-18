@@ -2,6 +2,11 @@
 {% load widget_tweaks %}
 
 {% block content %}
+<!-- Phone autocomplete suggestions -->
+<datalist id="phone-suggestions">
+    <option value="+7">
+</datalist>
+
 <section class="page-header">
     <div class="container">
         <h1 class="page-title">
@@ -97,6 +102,100 @@
 {% block extra_js %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('bookingForm');
+
+    // Client fields validation (only for admin)
+    const clientNameInput = document.getElementById('id_client_name');
+    const clientPhoneInput = document.getElementById('id_client_phone');
+
+    function setupValidation(input, errorId, validatorFn, errorMsg) {
+        if (!input) return;
+        input.addEventListener('input', function() {
+            this.classList.remove('input-error');
+            document.getElementById(errorId).textContent = '';
+            document.getElementById(errorId).style.display = 'none';
+        });
+        input.addEventListener('blur', function() {
+            if (this.value && !validatorFn(this.value)) {
+                this.classList.add('input-error');
+                const errorEl = document.getElementById(errorId);
+                errorEl.textContent = errorMsg;
+                errorEl.style.display = 'block';
+            }
+        });
+    }
+
+    // Name validation - only Cyrillic
+    if (clientNameInput) {
+        setupValidation(
+            clientNameInput,
+            'error_client_name',
+            value => /^[а-яА-ЯёЁ\s\-]+$/.test(value),
+            'Только кириллица'
+        );
+    }
+
+    // Phone validation with autocomplete
+    if (clientPhoneInput) {
+        setupValidation(
+            clientPhoneInput,
+            'error_client_phone',
+            value => /^\+7\d{10}$/.test(value),
+            'Формат: +7XXXXXXXXXX'
+        );
+        // Phone autocomplete
+        clientPhoneInput.setAttribute('list', 'phone-suggestions');
+        clientPhoneInput.addEventListener('input', function() {
+            if (this.value.length === 1 && this.value === '+') return;
+            if (this.value.length === 2 && this.value.startsWith('+7')) return;
+            if (!this.value.startsWith('+7')) {
+                this.value = '+7' + this.value.replace(/^\+7/, '');
+            }
+        });
+    }
+
+    // Form validation on submit
+    if (form && (clientNameInput || clientPhoneInput)) {
+        form.addEventListener('submit', function(e) {
+            let valid = true;
+            clearErrors();
+
+            if (clientNameInput && clientNameInput.value && !/^[а-яА-ЯёЁ\s\-]+$/.test(clientNameInput.value)) {
+                showError('client_name', 'Только кириллица');
+                valid = false;
+            }
+
+            if (clientPhoneInput && clientPhoneInput.value && !/^\+7\d{10}$/.test(clientPhoneInput.value)) {
+                showError('client_phone', 'Формат: +7XXXXXXXXXX');
+                valid = false;
+            }
+
+            if (!valid) {
+                e.preventDefault();
+            }
+        });
+    }
+
+    function showError(field, message) {
+        const el = document.getElementById('error_' + field);
+        if (el) {
+            el.textContent = message;
+            el.style.display = 'block';
+        }
+        const input = form.querySelector('[name="' + field + '"]');
+        if (input) input.classList.add('input-error');
+    }
+
+    function clearErrors() {
+        document.querySelectorAll('.form-error').forEach(el => {
+            el.textContent = '';
+            el.style.display = 'none';
+        });
+        document.querySelectorAll('.input-error').forEach(el => {
+            el.classList.remove('input-error');
+        });
+    }
+
     const zoneSelect = document.getElementById('id_zone');
     const packageSection = document.getElementById('packageSection');
     const numPlayersInput = document.getElementById('id_num_players');

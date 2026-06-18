@@ -290,3 +290,31 @@ class LoyaltyTransaction(models.Model):
 
     def __str__(self):
         return f"{self.user.name}: {self.get_transaction_type_display()} {self.points} баллов"
+
+
+class Review(models.Model):
+    """Отзывы пользователей"""
+
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="reviews",
+        verbose_name="Пользователь",
+    )
+    name = models.CharField("Имя автора", max_length=100)
+    text = models.TextField("Текст отзыва")
+    rating = models.PositiveIntegerField(
+        "Оценка",
+        choices=[(i, i) for i in range(1, 6)],
+        default=5,
+    )
+    is_active = models.BooleanField("Опубликован", default=True)
+    created_at = models.DateTimeField("Дата", auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Отзыв"
+        verbose_name_plural = "Отзывы"
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"Отзыв от {self.name} — {self.rating}★"

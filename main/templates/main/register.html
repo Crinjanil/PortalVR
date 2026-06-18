@@ -1,6 +1,11 @@
 {% extends 'main/base.html' %}
 
 {% block content %}
+<!-- Phone autocomplete suggestions -->
+<datalist id="phone-suggestions">
+    <option value="+7">
+</datalist>
+
 <section class="auth-section">
     <div class="auth-container">
         <div class="auth-card">
@@ -92,7 +97,7 @@ document.addEventListener('DOMContentLoaded', function() {
             valid = false;
         }
 
-        // Phone validation
+        // Phone validation with autocomplete
         if (!phone.value.trim()) {
             showError('phone', 'Введите номер телефона');
             valid = false;
@@ -100,6 +105,15 @@ document.addEventListener('DOMContentLoaded', function() {
             showError('phone', 'Формат: +7XXXXXXXXXX');
             valid = false;
         }
+
+        // Phone autocomplete functionality
+        phone.addEventListener('input', function() {
+            if (this.value.length === 1 && this.value === '+') return;
+            if (this.value.length === 2 && this.value.startsWith('+7')) return;
+            if (!this.value.startsWith('+7')) {
+                this.value = '+7' + this.value.replace(/^\+7/, '');
+            }
+        });
 
         // Password validation
         if (!password.value) {

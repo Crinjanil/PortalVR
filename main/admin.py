@@ -9,6 +9,7 @@ from .models import (
     TimeSlot,
     Booking,
     LoyaltyTransaction,
+    Review,
 )
 
 
@@ -150,4 +151,12 @@ class LoyaltyTransactionAdmin(admin.ModelAdmin):
     list_filter = ("transaction_type", "created_at")
     search_fields = ("user__name", "description")
     raw_id_fields = ("user", "booking")
+    readonly_fields = ("created_at",)
+
+
+@admin.register(Review)
+class ReviewAdmin(admin.ModelAdmin):
+    list_display = ("name", "rating", "is_active", "created_at")
+    list_filter = ("rating", "is_active", "created_at")
+    search_fields = ("name", "text")
     readonly_fields = ("created_at",)

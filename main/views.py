@@ -4,7 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.http import JsonResponse
 from django.utils import timezone
-from django.db.models import Q, Sum
+from django.db.models import Q, Sum, Avg
 from .models import (
     Game,
     Genre,
@@ -14,6 +14,7 @@ from .models import (
     Package,
     User,
     LoyaltyTransaction,
+    Review,
 )
 from .forms import RegistrationForm, LoginForm, BookingForm, AdminBookingForm
 import datetime
@@ -21,11 +22,13 @@ import datetime
 
 def index_view(request):
     popular_games = Game.objects.filter(is_popular=True)[:5]
+    reviews = Review.objects.filter(is_active=True)[:6]
     return render(
         request,
         "main/index.html",
         {
             "popular_games": popular_games,
+            "reviews": reviews,
             "page_title": "О нас",
         },
     )
@@ -653,3 +656,71 @@ def logout_view(request):
     logout(request)
     messages.info(request, "Вы вышли из системы")
     return redirect("main:index")
+
+
+def review_add_view(request):
+    """Добавить отзыв (только для авторизованных)"""
+    if not request.user.is_authenticated:
+        messages.warning(request, "Для оставления отзыва необходимо войти в аккаунт")
+        return redirect("main:login")
+
+    if request.method == "POST":
+        text = request.POST.get("text", "").strip()
+        rating = int(request.POST.get("rating", 5))
+
+        if not text:
+            messages.error(request, "Введите текст отзыва")
+        elif len(text) < 10:
+            messages.error(request, "Отзыв слишком короткий (минимум 10 символов)")
+        elif rating < 1 or rating > 5:
+            messages.error(request, "Некорректная оценка")
+        else:
+            Review.objects.create(
+                user=request.user,
+                name=request.user.name,
+                text=text,
+                rating=rating,
+            )
+            messages.success(request, "Спасибо за ваш отзыв!")
+
+    next_url = request.POST.get("next", request.GET.get("next", "main:reviews"))
+    return redirect(next_url)
+
+
+def reviews_view(request):
+    """Страница со всеми отзывами"""
+    reviews = Review.objects.filter(is_active=True).order_by("-created_at")
+
+    reviews_count = reviews.count()
+    avg_rating = reviews.aggregate(avg=Avg("rating"))["avg"] or 0
+    five_star_count = reviews.filter(rating=5).count()
+
+    return render(
+        request,
+        "main/reviews.html",
+        {
+            "reviews": reviews,
+            "reviews_count": reviews_count,
+            "avg_rating": avg_rating,
+            "five_star_count": five_star_count,
+            "page_title": "Отзывы",
+        },
+    )
+
+
+@login_required
+def review_delete_view(request, pk):
+    """Удалить отзыв (только для staff)"""
+    if not request.user.is_staff:
+        messages.error(request, "Нет прав для удаления отзывов")
+        return redirect("main:index")
+
+    try:
+        review = Review.objects.get(pk=pk)
+        review.delete()
+        messages.success(request, "Отзыв удалён")
+    except Review.DoesNotExist:
+        messages.error(request, "Отзыв не найден")
+
+    next_url = request.GET.get("next", "main:index")
+    return redirect(next_url)

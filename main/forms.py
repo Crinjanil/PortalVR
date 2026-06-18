@@ -30,6 +30,9 @@ class RegistrationForm(forms.Form):
             attrs={
                 "class": "form-input",
                 "placeholder": "+7XXXXXXXXXX",
+                "list": "phone-suggestions",
+                "autocomplete": "tel",
+                "inputmode": "tel",
             }
         ),
     )
@@ -173,10 +176,13 @@ class AdminBookingForm(BookingForm):
     client_name = forms.CharField(
         label="Имя клиента",
         max_length=100,
+        validators=[cyrillic_validator],
         widget=forms.TextInput(
             attrs={
                 "class": "form-input",
-                "placeholder": "Имя клиента",
+                "placeholder": "Имя клиента (кириллица)",
+                "pattern": "[а-яА-ЯёЁ\\s\\-]+",
+                "title": "Только кириллица",
             }
         ),
     )
@@ -188,6 +194,10 @@ class AdminBookingForm(BookingForm):
             attrs={
                 "class": "form-input",
                 "placeholder": "+7XXXXXXXXXX",
+                "pattern": "\\+7\\d{10}",
+                "title": "Формат: +7XXXXXXXXXX",
+                "inputmode": "tel",
+                "autocomplete": "tel",
             }
         ),
     )

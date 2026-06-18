@@ -1,0 +1,216 @@
+{% extends 'main/base.html' %}
+
+{% block content %}
+<section class="page-header">
+    <div class="container">
+        <h1 class="page-title">
+            Отзывы <span class="accent">наших гостей</span>
+        </h1>
+        <p class="page-subtitle">Ваше мнение помогает нам становиться лучше</p>
+    </div>
+</section>
+
+<section class="section">
+    <div class="container">
+        <!-- Stats -->
+        <div class="reviews-stats">
+            <div class="reviews-stat">
+                <div class="reviews-stat-value">{{ reviews_count }}</div>
+                <div class="reviews-stat-label">Всего отзывов</div>
+            </div>
+            <div class="reviews-stat">
+                <div class="reviews-stat-value">{{ avg_rating|floatformat:1 }} <i class="fas fa-star"></i></div>
+                <div class="reviews-stat-label">Средняя оценка</div>
+            </div>
+            <div class="reviews-stat">
+                <div class="reviews-stat-value">{{ five_star_count }}</div>
+                <div class="reviews-stat-label">Пятёрок</div>
+            </div>
+        </div>
+
+        <!-- Add Review Form -->
+        {% if user.is_authenticated %}
+        <div class="review-add-card">
+            <div class="review-add-header">
+                <div class="review-avatar">
+                    <i class="fas fa-user"></i>
+                </div>
+                <div class="review-add-info">
+                    <h3>{{ user.name }}</h3>
+                    <span class="review-badge">Вы авторизованы</span>
+                </div>
+            </div>
+            <form method="post" action="{% url 'main:review_add' %}" class="review-form">
+                {% csrf_token %}
+                <div class="review-rating-select">
+                    <label>Ваша оценка:</label>
+                    <div class="rating-stars">
+                        {% for i in "54321"|make_list %}
+                        <input type="radio" name="rating" value="{{ i }}" id="star{{ i }}" {% if forloop.first %}checked{% endif %}>
+                        <label for="star{{ i }}"><i class="fas fa-star"></i></label>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="form-group">
+                    <textarea name="text" class="form-input" rows="4" placeholder="Поделитесь своими впечатлениями от виртуальных приключений..." required minlength="10"></textarea>
+                </div>
+                <div class="review-form-actions">
+                    <button type="submit" class="btn btn-primary btn-lg">
+                        <i class="fas fa-paper-plane"></i> Опубликовать отзыв
+                    </button>
+                </div>
+            </form>
+        </div>
+        {% else %}
+        <div class="review-login-card">
+            <div class="review-login-icon">
+                <i class="fas fa-comments"></i>
+            </div>
+            <h3>Хотите оставить отзыв?</h3>
+            <p>Войдите в аккаунт или зарегистрируйтесь, чтобы поделиться своим мнением</p>
+            <div class="review-login-buttons">
+                <a href="{% url 'main:login' %}?next={% url 'main:reviews' %}" class="btn btn-primary btn-lg">
+                    <i class="fas fa-sign-in-alt"></i> Войти
+                </a>
+                <a href="{% url 'main:register' %}?next={% url 'main:reviews' %}" class="btn btn-outline btn-lg">
+                    <i class="fas fa-user-plus"></i> Регистрация
+                </a>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Rating Filter -->
+        <div class="reviews-filter">
+            <button class="filter-btn active" data-rating="all">Все</button>
+            <button class="filter-btn" data-rating="5">
+                <i class="fas fa-star"></i> 5
+            </button>
+            <button class="filter-btn" data-rating="4">
+                <i class="fas fa-star"></i> 4
+            </button>
+            <button class="filter-btn" data-rating="3">
+                <i class="fas fa-star"></i> 3
+            </button>
+            <button class="filter-btn" data-rating="2">
+                <i class="fas fa-star"></i> 2
+            </button>
+            <button class="filter-btn" data-rating="1">
+                <i class="fas fa-star"></i> 1
+            </button>
+        </div>
+
+        <!-- Reviews Grid -->
+        {% if reviews %}
+        <div class="reviews-masonry" id="reviewsGrid">
+            {% for review in reviews %}
+            <div class="review-card-item" data-rating="{{ review.rating }}">
+                <div class="review-card-inner">
+                    <div class="review-card-header">
+                        <div class="review-user">
+                            <div class="review-avatar {% if review.rating == 5 %}gold{% endif %}">
+                                {{ review.name|first|upper }}
+                            </div>
+                            <div class="review-user-info">
+                                <span class="review-name">{{ review.name }}</span>
+                                <span class="review-date">{{ review.created_at|date:"d F Y" }}</span>
+                            </div>
+                        </div>
+                        <div class="review-stars">
+                            {% for i in "12345"|make_list %}
+                            <i class="fas fa-star{% if forloop.counter <= review.rating %} active{% endif %}"></i>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <div class="review-card-body">
+                        <p>{{ review.text }}</p>
+                    </div>
+                    <div class="review-card-footer">
+                        <div class="review-verified">
+                            <i class="fas fa-check-circle"></i> Проверенный отзыв
+                        </div>
+                        {% if user.is_staff %}
+                        <a href="{% url 'main:review_delete' review.pk %}?next={% url 'main:reviews' %}" class="review-delete-btn" onclick="return confirm('Удалить этот отзыв?');" title="Удалить отзыв">
+                            <i class="fas fa-trash"></i>
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="no-reviews-card">
+            <div class="no-reviews-icon">
+                <i class="fas fa-pen-fancy"></i>
+            </div>
+            <h3>Пока нет отзывов</h3>
+            <p>Будьте первым, кто поделится впечатлениями!</p>
+        </div>
+        {% endif %}
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="section section-cta-small">
+    <div class="container">
+        <div class="cta-small-content">
+            <div class="cta-small-text">
+                <h3>Готовы к новым приключениям?</h3>
+                <p>Забронируйте сеанс VR прямо сейчас</p>
+            </div>
+            <a href="{% url 'main:booking_list' %}" class="btn btn-primary btn-lg">
+                <i class="fas fa-calendar-check"></i> Забронировать
+            </a>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Rating filter
+    const filterBtns = document.querySelectorAll('.filter-btn');
+    const reviewCards = document.querySelectorAll('.review-card-item');
+
+    filterBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+            const rating = this.dataset.rating;
+
+            // Update active button
+            filterBtns.forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+
+            // Filter cards
+            reviewCards.forEach(card => {
+                if (rating === 'all' || card.dataset.rating === rating) {
+                    card.style.display = 'block';
+                    card.style.animation = 'fadeInUp 0.5s ease forwards';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        });
+    });
+
+    // Star rating hover effect
+    const starInputs = document.querySelectorAll('.rating-stars input');
+    const starLabels = document.querySelectorAll('.rating-stars label');
+
+    starInputs.forEach((input, idx) => {
+        input.addEventListener('focus', function() {
+            starLabels.forEach((label, i) => {
+                if (i <= 4 - idx) {
+                    label.style.color = '#ffd700';
+                }
+            });
+        });
+        input.addEventListener('blur', function() {
+            starLabels.forEach(label => {
+                label.style.color = '';
+            });
+        });
+    });
+});
+</script>
+{% endblock %}
