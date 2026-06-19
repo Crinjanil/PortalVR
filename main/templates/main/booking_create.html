@@ -2,11 +2,9 @@
 {% load widget_tweaks %}
 
 {% block content %}
-<!-- Phone autocomplete suggestions -->
 <datalist id="phone-suggestions">
     <option value="+7">
 </datalist>
-
 <section class="page-header">
     <div class="container">
         <h1 class="page-title">
@@ -18,7 +16,6 @@
         </h1>
     </div>
 </section>
-
 <section class="section">
     <div class="container">
         <div class="form-container">
@@ -76,7 +73,6 @@
                     </div>
                 </div>
 
-                <!-- Availability indicator -->
                 <div class="availability-indicator" id="availabilityIndicator" style="display:none;">
                     <div class="availability-loading" id="availLoading">
                         <i class="fas fa-spinner fa-spin"></i> Проверка доступности...
@@ -104,7 +100,6 @@
 document.addEventListener('DOMContentLoaded', function() {
     const form = document.getElementById('bookingForm');
 
-    // Client fields validation (only for admin)
     const clientNameInput = document.getElementById('id_client_name');
     const clientPhoneInput = document.getElementById('id_client_phone');
 
@@ -125,7 +120,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Name validation - only Cyrillic
     if (clientNameInput) {
         setupValidation(
             clientNameInput,
@@ -135,7 +129,6 @@ document.addEventListener('DOMContentLoaded', function() {
         );
     }
 
-    // Phone validation with autocomplete
     if (clientPhoneInput) {
         setupValidation(
             clientPhoneInput,
@@ -143,7 +136,6 @@ document.addEventListener('DOMContentLoaded', function() {
             value => /^\+7\d{10}$/.test(value),
             'Формат: +7XXXXXXXXXX'
         );
-        // Phone autocomplete
         clientPhoneInput.setAttribute('list', 'phone-suggestions');
         clientPhoneInput.addEventListener('input', function() {
             if (this.value.length === 1 && this.value === '+') return;
@@ -154,7 +146,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Form validation on submit
     if (form && (clientNameInput || clientPhoneInput)) {
         form.addEventListener('submit', function(e) {
             let valid = true;
@@ -222,7 +213,6 @@ document.addEventListener('DOMContentLoaded', function() {
     zoneSelect.addEventListener('change', togglePackage);
     togglePackage();
 
-    // Check availability via API
     const dateInput = document.querySelector('[name="date"]');
     const timeSelect = document.getElementById('id_time_slot');
     const indicator = document.getElementById('availabilityIndicator');

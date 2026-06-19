@@ -12,7 +12,6 @@
 
 <section class="section">
     <div class="container">
-        <!-- Stats -->
         <div class="reviews-stats">
             <div class="reviews-stat">
                 <div class="reviews-stat-value">{{ reviews_count }}</div>
@@ -28,7 +27,6 @@
             </div>
         </div>
 
-        <!-- Add Review Form -->
         {% if user.is_authenticated %}
         <div class="review-add-card">
             <div class="review-add-header">
@@ -79,7 +77,6 @@
         </div>
         {% endif %}
 
-        <!-- Rating Filter -->
         <div class="reviews-filter">
             <button class="filter-btn active" data-rating="all">Все</button>
             <button class="filter-btn" data-rating="5">
@@ -99,7 +96,6 @@
             </button>
         </div>
 
-        <!-- Reviews Grid -->
         {% if reviews %}
         <div class="reviews-masonry" id="reviewsGrid">
             {% for review in reviews %}
@@ -150,7 +146,6 @@
     </div>
 </section>
 
-<!-- CTA Section -->
 <section class="section section-cta-small">
     <div class="container">
         <div class="cta-small-content">
@@ -169,7 +164,6 @@
 {% block extra_js %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Rating filter
     const filterBtns = document.querySelectorAll('.filter-btn');
     const reviewCards = document.querySelectorAll('.review-card-item');
 
@@ -177,11 +171,9 @@ document.addEventListener('DOMContentLoaded', function() {
         btn.addEventListener('click', function() {
             const rating = this.dataset.rating;
 
-            // Update active button
             filterBtns.forEach(b => b.classList.remove('active'));
             this.classList.add('active');
 
-            // Filter cards
             reviewCards.forEach(card => {
                 if (rating === 'all' || card.dataset.rating === rating) {
                     card.style.display = 'block';
@@ -193,7 +185,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Star rating hover effect
     const starInputs = document.querySelectorAll('.rating-stars input');
     const starLabels = document.querySelectorAll('.rating-stars label');
 

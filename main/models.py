@@ -55,21 +55,20 @@ class User(AbstractBaseUser, PermissionsMixin):
     @property
     def loyalty_level(self):
         if self.loyalty_points >= 1000:
-            return "Platinum"
+            return "Платина"
         elif self.loyalty_points >= 500:
-            return "Gold"
+            return "Золото"
         elif self.loyalty_points >= 200:
-            return "Silver"
-        return "Bronze"
+            return "Серебро"
+        return "Бронза"
 
     @property
     def discount_percent(self):
-        levels = {"Bronze": 0, "Silver": 5, "Gold": 10, "Platinum": 15}
+        levels = {"Бронза": 0, "Серебро": 5, "Золото": 10, "Платина": 15}
         return levels.get(self.loyalty_level, 0)
 
 
 class Client(models.Model):
-    """Клиент в БД — может быть не зарегистрирован"""
 
     name = models.CharField("Имя", max_length=100)
     phone = models.CharField("Телефон", max_length=12, validators=[phone_validator])
@@ -134,9 +133,9 @@ class Game(models.Model):
 
 class Package(models.Model):
     PACKAGE_CHOICES = [
-        ("light", "Light — 2 часа"),
-        ("standard", "Standard — 3 часа"),
-        ("premium", "Premium — 4 часа"),
+        ("light", "Базовый — 2 часа"),
+        ("standard", "Стандарт — 3 часа"),
+        ("premium", "Премиум — 4 часа"),
     ]
     name = models.CharField(
         "Название", max_length=10, choices=PACKAGE_CHOICES, unique=True
@@ -155,7 +154,6 @@ class Package(models.Model):
 
 
 class TimeSlot(models.Model):
-    """Временные слоты для бронирования (каждый час)"""
 
     date = models.DateField("Дата")
     start_time = models.TimeField("Начало")
@@ -236,7 +234,6 @@ class Booking(models.Model):
         return f"{self.get_zone_display()} — {self.client.name} — {self.time_slot}"
 
     def save(self, *args, **kwargs):
-        # Начисляем баллы лояльности
         if not self.pk:
             if self.zone == "package" and self.package:
                 self.loyalty_points_earned = int(self.package.price) // 10
@@ -248,7 +245,6 @@ class Booking(models.Model):
 
     @property
     def end_time_slot(self):
-        """Для пакетов — возвращает конечный слот"""
         if self.package:
             end = datetime.datetime.combine(
                 self.time_slot.date, self.time_slot.start_time
@@ -258,7 +254,6 @@ class Booking(models.Model):
 
 
 class LoyaltyTransaction(models.Model):
-    """Транзакции баллов лояльности"""
 
     TYPE_CHOICES = [
         ("earn", "Начисление"),
@@ -293,7 +288,6 @@ class LoyaltyTransaction(models.Model):
 
 
 class Review(models.Model):
-    """Отзывы пользователей"""
 
     user = models.ForeignKey(
         User,

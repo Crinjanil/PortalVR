@@ -1,7 +1,6 @@
 {% extends 'main/base.html' %}
 
 {% block content %}
-<!-- Phone autocomplete suggestions -->
 <datalist id="phone-suggestions">
     <option value="+7">
 </datalist>
@@ -88,7 +87,6 @@ document.addEventListener('DOMContentLoaded', function() {
         const passwordConfirm = form.querySelector('[name="password_confirm"]');
         const agree = form.querySelector('[name="agree"]');
 
-        // Name validation
         if (!name.value.trim()) {
             showError('name', 'Введите имя');
             valid = false;
@@ -97,7 +95,6 @@ document.addEventListener('DOMContentLoaded', function() {
             valid = false;
         }
 
-        // Phone validation with autocomplete
         if (!phone.value.trim()) {
             showError('phone', 'Введите номер телефона');
             valid = false;
@@ -106,7 +103,6 @@ document.addEventListener('DOMContentLoaded', function() {
             valid = false;
         }
 
-        // Phone autocomplete functionality
         phone.addEventListener('input', function() {
             if (this.value.length === 1 && this.value === '+') return;
             if (this.value.length === 2 && this.value.startsWith('+7')) return;
@@ -115,7 +111,6 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
 
-        // Password validation
         if (!password.value) {
             showError('password', 'Введите пароль');
             valid = false;
@@ -124,13 +119,11 @@ document.addEventListener('DOMContentLoaded', function() {
             valid = false;
         }
 
-        // Password confirm
         if (password.value !== passwordConfirm.value) {
             showError('password_confirm', 'Пароли не совпадают');
             valid = false;
         }
 
-        // Agree
         if (!agree.checked) {
             showError('agree', 'Необходимо согласие');
             valid = false;
@@ -161,7 +154,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Real-time validation
     const inputs = form.querySelectorAll('input');
     inputs.forEach(input => {
         input.addEventListener('input', function() {
